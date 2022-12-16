@@ -1,70 +1,46 @@
-# Getting Started with Create React App
+Redux-Saga
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Watcher - следит за выполнением actions в нашем приложении;
+Worker - выполняет бизнес-логику, асинхронные операции;
+Effects - блокирующие выпонение(take, call) и неблокирующие(fork, spawn)
 
-## Available Scripts
+Эффекты - выполняют какое-либо дейсвтие: возврают простые объекты, которые содержат инстукции как обрабатывать redux-saga-middleware
+1) put (выполняет роль dispatch) - yield put ({type: "SET-PEOPLE", payload: data})
+2) take - указывает middleware ждать dispatch указанного действия; (take ('CLICK'))
+3) takeEvery - используется в watcher для декларативной записи actions и workera;(takeEvery("CLICK", workerSaga))
+4) takeLatest - при срабатывании action несколько раз - worker отработает только на последний раз и проигнорирует предыдущие запросы - (takeLatest("CLICK", workerSaga))
+5) takeLeading - автоматически отменяет любую следующую задачу саги, запущенную позднее, если первая запущенная программа еще выполняется - (takeLeading("CLICK", workerSaga))
 
-In the project directory, you can run:
 
-### `npm start`
+Для вызова асинхронных действий, но блокируют выполнение - требуется последовательное выполнение запросов помогает тестировать приложение: 
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+4) call - выполняет переданную функцию. Если функция вернет Promise, то приостанавливает сагу до тех пор, пока Promise не вызовет resolve. Второй параметр - аргументы для перерданной функции.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+const people = yield call(swapiGet, "people")
+const planets = yield call(swapiGet, "planets")
 
-### `npm test`
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+5) Для асинхронных действий, но выполняются параллельно, не блокируют код:
 
-### `npm run build`
+fork - эффект, который указывает middleware выполнить неблокирующий вызов переданной функции:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+export function* workerSaga() {
+  yield fork(loadPeople)
+  yield fork(loadPlanets)
+}
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Асинхронные операции выполняются параллельно и не ждут друг друга.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+ВАЖНО!!!! 
 
-### `npm run eject`
+Все форкнутые и разветвленные задачи -  прикрепленны к своим родителям.
+Т.е. внутри workera 2 отдельных функции, которые использованы с помощью fork, и если в одной будет ошибка - worker заблокируется.
+Любая ошибка, которая происходит в дочерней задаче, которая описана с помощью fork - она всплывает к родительским задачам.
+Если ошибка произошла - родительская задача блокируется и не будет выполнена.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+6) spawn - создает параллельную задачу в корне саги, сам процесс не привязан к родителю. Следовательно ошибка в данной функции не заблокирует worker.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+yield spawn(loadPeople)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+7) join - заблокировать не блокирующую задачу и получить ее результат;
