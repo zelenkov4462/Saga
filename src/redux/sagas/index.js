@@ -17,7 +17,7 @@ async function swapiGet(pattern) {
 }
 
 export function* loadPeople() {
-  throw new Error();
+  // throw new Error();
   const people = yield call(swapiGet, "people");
   yield put({ type: "SET_PEOPLE", payload: people.results });
 }
