@@ -9,15 +9,9 @@ import { createReduxHistoryContext } from "redux-first-history";
 const { createReduxHistory, routerMiddleware, routerReducer } =
   createReduxHistoryContext({
     history: createBrowserHistory(),
-    //other options if needed
   });
 
 const sagaMiddleware = createSagaMiddleware();
-//
-// const store = createStore(
-//   reducer,
-//   composeWithDevTools(applyMiddleware(sagaMiddleware))
-// );
 
 const store = createStore(
   combineReducers({

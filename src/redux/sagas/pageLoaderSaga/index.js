@@ -11,11 +11,13 @@ function* loadBlogData() {
 export default function* pageLoaderSaga() {
   while (true) {
     const action = yield take(LOCATION_CHANGE);
+    console.log(action);
 
     if (action.payload.location.pathname.endsWith("blog")) {
       yield fork(loadBlogData);
       console.log("action-blog", action);
     }
+
     console.log("action", action);
   }
 }

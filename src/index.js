@@ -12,14 +12,6 @@ import "./index.css";
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <Provider store={store}>
-    {/*<BrowserRouter>*/}
-    {/*  <Routes>*/}
-    {/*    <Route path="/" element={<App />} />*/}
-    {/*    <Route path="/blog" element={<BlogPage />} />*/}
-    {/*    <Route path="*" element={<NotFoundPage />} />*/}
-    {/*  </Routes>*/}
-    {/*</BrowserRouter>*/}
-
     <Router history={history}>
       <Routes>
         <Route path="/" element={<App />} />
