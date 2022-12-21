@@ -1,53 +1,35 @@
-import {
-  take,
-  takeEvery,
-  takeLatest,
-  takeLeading,
-  put,
-  call,
-  fork,
-  spawn,
-} from "redux-saga/effects";
-import { BASE_URL } from "../../API";
+import { fork, spawn, call, all } from "redux-saga/effects";
 
-async function swapiGet(pattern) {
-  const request = await fetch(BASE_URL + `/${pattern}`);
-  const data = await request.json();
-  return data;
-}
-
-export function* loadPeople() {
+export function* saga1() {
+  console.log("saga1");
   // throw new Error();
-  const people = yield call(swapiGet, "people");
-  yield put({ type: "SET_PEOPLE", payload: people.results });
 }
-
-export function* loadPlanets() {
-  const planets = yield call(swapiGet, "planets");
-  yield put({ type: "SET_PLANETS", payload: planets.results });
+export function* saga2() {
+  console.log("saga2");
 }
-
-export function* workerSaga() {
-  // const people = yield call(swapiGet, "people");
-  // const planets = yield call(swapiGet, "planets");
-  // yield put({ type: "SET_PEOPLE", payload: people.results });
-  // yield put({ type: "SET_PLANETS", payload: planets.results });
-
-  // yield fork(loadPeople);
-  // yield fork(loadPlanets);
-
-  yield spawn(loadPeople);
-  yield spawn(loadPlanets);
-}
-
-export function* watchLoadDataSaga() {
-  // while (true) {
-  //    yield take('CLICK');
-  //    yield workerSaga()
-  // }
-  yield takeEvery("LOAD_DATA", workerSaga);
+export function* saga3() {
+  console.log("saga3");
 }
 
 export default function* rootSaga() {
-  yield watchLoadDataSaga();
+  // yield spawn(saga1), yield spawn(saga2), yield spawn(saga3);
+
+  const sagas = [saga1, saga2, saga3];
+
+  const retrySagas = sagas.map((saga) => {
+    return spawn(function* () {
+      while (true) {
+        try {
+          //используем блокирующий метод call -
+          // чтобы корректно обработать ошибку
+          yield call(saga);
+          break;
+        } catch (e) {
+          console.log(e);
+        }
+      }
+    });
+  });
+
+  yield all(retrySagas);
 }

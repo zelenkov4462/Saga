@@ -6,12 +6,7 @@ function App() {
   const dispatch = useDispatch();
 
   console.log(store);
-  return (
-    <div className="App">
-      redux-saga tutorial
-      <button onClick={() => dispatch({ type: "LOAD_DATA" })}>click</button>
-    </div>
-  );
+  return <div className="App">redux-saga tutorial</div>;
 }
 
 export default App;
