@@ -1,20 +1,26 @@
-import { fork, spawn, call, all } from "redux-saga/effects";
+import { fork, spawn, call, all, delay } from "redux-saga/effects";
 
-export function* saga1() {
-  console.log("saga1");
-  // throw new Error();
+//Когда необходимо сделать запросы при
+// первой загрузке страницы без использования dispatch
+
+function* auth() {
+  yield delay(2000);
+  console.log("auth ok");
+  return true;
 }
-export function* saga2() {
-  console.log("saga2");
+
+function* loadUsers() {
+  const request = yield call(fetch, "https://swapi.dev/api/people");
+  const data = yield call([request, request.json]);
+  console.log("data", data);
 }
-export function* saga3() {
-  console.log("saga3");
+
+export function* loadBasicData() {
+  yield all([fork(auth), fork(loadUsers)]);
 }
 
 export default function* rootSaga() {
-  // yield spawn(saga1), yield spawn(saga2), yield spawn(saga3);
-
-  const sagas = [saga1, saga2, saga3];
+  const sagas = [loadBasicData];
 
   const retrySagas = sagas.map((saga) => {
     return spawn(function* () {
