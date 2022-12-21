@@ -1,14 +1,5 @@
-const initialState = {
-  blog: {},
-};
+const initialState = {};
 
-export default function reducer(state = initialState, action) {
-  switch (action.type) {
-    case "BLOG_LOADED":
-      return {
-        ...state,
-        blog: action.payload,
-      };
-  }
+export default function appReducer(state = initialState, action) {
   return state;
 }
